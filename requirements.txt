@@ -6,3 +6,4 @@ firebase-admin
 Pillow
 opencv-python
 python-multipart
+python-dotenv

@@ -11,28 +11,41 @@ from io import BytesIO  # Add this line to import BytesIO
 
 app = FastAPI()
 
-# Load environment variables from .env file
-load_dotenv()
+# # Retrieve the Firebase private key from the environment variable
+# firebase_private_key = os.getenv("FIREBASE_PRIVATE_KEY")
+# print("FIREBASE_PRIVATE_KEY:", firebase_private_key)
 
-# Create a dictionary with Firebase credentials
-firebase_credentials = {
-    "type": os.getenv("FIREBASE_TYPE"),
-    "project_id": os.getenv("FIREBASE_PROJECT_ID"),
-    "private_key_id": os.getenv("FIREBASE_PRIVATE_KEY_ID"),
-    "private_key": os.getenv("FIREBASE_PRIVATE_KEY").replace("\\n", "\n"),
-    "client_email": os.getenv("FIREBASE_CLIENT_EMAIL"),
-    "client_id": os.getenv("FIREBASE_CLIENT_ID"),
-    "auth_uri": os.getenv("FIREBASE_AUTH_URI"),
-    "token_uri": os.getenv("FIREBASE_TOKEN_URI"),
-    "auth_provider_x509_cert_url": os.getenv("FIREBASE_AUTH_PROVIDER_X509_CERT_URL"),
-    "client_x509_cert_url": os.getenv("FIREBASE_CLIENT_X509_CERT_URL"),
-    "universe_domain": os.getenv("FIREBASE_UNIVERSE_DOMAIN")
-}
+# # Check if the environment variable is set
+# if firebase_private_key is None:
+#     raise ValueError("FIREBASE_PRIVATE_KEY environment variable is not set.")
 
-# Use the credentials to initialize Firebase
-cred = credentials.Certificate(firebase_credentials)
+
+# # Replace newline characters if the private key is not None
+# firebase_private_key = firebase_private_key.replace("\\n", "\n")
+
+# # Create a dictionary with Firebase credentials
+# firebase_credentials = {
+#     "type": os.getenv("FIREBASE_TYPE"),
+#     "project_id": os.getenv("FIREBASE_PROJECT_ID"),
+#     "private_key_id": os.getenv("FIREBASE_PRIVATE_KEY_ID"),
+#     "private_key": firebase_private_key,
+#     "client_email": os.getenv("FIREBASE_CLIENT_EMAIL"),
+#     "client_id": os.getenv("FIREBASE_CLIENT_ID"),
+#     "auth_uri": os.getenv("FIREBASE_AUTH_URI"),
+#     "token_uri": os.getenv("FIREBASE_TOKEN_URI"),
+#     "auth_provider_x509_cert_url": os.getenv("FIREBASE_AUTH_PROVIDER_X509_CERT_URL"),
+#     "client_x509_cert_url": os.getenv("FIREBASE_CLIENT_X509_CERT_URL"),
+#     "universe_domain": os.getenv("FIREBASE_UNIVERSE_DOMAIN"),
+# }
+
+# # Use the credentials to initialize Firebase
+# cred = credentials.Certificate(firebase_credentials)
+# initialize_app(cred)
+
+cred = credentials.Certificate("./credentials.json")
 firebase_admin.initialize_app(cred)
 
+# Access Firestore
 db = firestore.client()
 
 model_path = os.path.join('models', 'dyslexia_scanner.h5')
