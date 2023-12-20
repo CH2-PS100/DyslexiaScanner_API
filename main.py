@@ -1,4 +1,4 @@
-from fastapi import FastAPI, File, UploadFile, HTTPException
+from fastapi import FastAPI, File, UploadFile, HTTPException, Depends
 import uvicorn
 import os
 import numpy as np
@@ -152,6 +152,37 @@ def get_predict_route():
     try:
         data = get_dyslexia_data()
         return {"dyslexia_data": data}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+# Add a route to delete all dyslexia data
+@app.delete("/delete-all")
+def delete_all_data():
+    try:
+        # Delete all documents in the 'dyslexia_data' collection
+        collection_ref = db.collection('dyslexia_data')
+        docs = collection_ref.stream()
+
+        for doc in docs:
+            doc.reference.delete()
+
+        return {"message": "All dyslexia data deleted successfully."}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Add a route to delete dyslexia data by ID
+@app.delete("/delete/{doc_id}")
+def delete_data_by_id(doc_id: str):
+    try:
+        # Delete the document with the specified ID from the 'dyslexia_data' collection
+        doc_ref = db.collection('dyslexia_data').document(doc_id)
+        doc = doc_ref.get()
+
+        if doc.exists:
+            doc_ref.delete()
+            return {"message": f"Dyslexia data with ID {doc_id} deleted successfully."}
+        else:
+            raise HTTPException(status_code=404, detail=f"Dyslexia data with ID {doc_id} not found.")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
