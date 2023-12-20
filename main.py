@@ -185,6 +185,37 @@ def delete_data_by_id(doc_id: str):
             raise HTTPException(status_code=404, detail=f"Dyslexia data with ID {doc_id} not found.")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+# Add a route to update dyslexia data by ID using an image
+@app.put("/update/{doc_id}")
+async def update_data_by_id(doc_id: str, image: UploadFile = File(...)):
+    try:
+        contents = await image.read()
+        img = Image.open(BytesIO(contents))
+
+        # Preprocess the image
+        processed_image = preprocess_image(img)
+
+        # Predict using the loaded model
+        prediction = loaded_model.predict(processed_image)
+        prediction_value = prediction[0][0]
+
+        # Update the document with the specified ID in the 'dyslexia_data' collection
+        doc_ref = db.collection('dyslexia_data').document(doc_id)
+        doc = doc_ref.get()
+
+        if doc.exists:
+            # Update the diagnosis and confidence fields
+            doc_ref.update({
+                "diagnosis": "Unfortunately, there is a >50% chance of suffering from dyslexia." if prediction_value > 0.5 else "Congratulations, you are normal.",
+                "confidence": float(prediction_value),
+            })
+
+            return {"message": f"Dyslexia data with ID {doc_id} updated successfully."}
+        else:
+            raise HTTPException(status_code=404, detail=f"Dyslexia data with ID {doc_id} not found.")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 port = os.environ.get("PORT", 8080)
 print(f"Listening to http://0.0.0.0:{port}")
