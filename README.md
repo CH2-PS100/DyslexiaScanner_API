@@ -53,5 +53,3 @@ pip install -r requirements.txt
 ```sh
 python main.py
 ```
-
-## Testing Postman & Swagger (Deploy)
