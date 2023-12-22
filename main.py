@@ -7,11 +7,10 @@ from dotenv import load_dotenv
 import firebase_admin
 from firebase_admin import credentials, firestore, initialize_app
 from PIL import Image
-from io import BytesIO  # Add this line to import BytesIO
+from io import BytesIO  
 
 app = FastAPI()
 
-# # Retrieve the Firebase private key from the environment variable
 # firebase_private_key = os.getenv("FIREBASE_PRIVATE_KEY")
 # print("FIREBASE_PRIVATE_KEY:", firebase_private_key)
 
@@ -20,7 +19,6 @@ app = FastAPI()
 #     raise ValueError("FIREBASE_PRIVATE_KEY environment variable is not set.")
 
 
-# # Replace newline characters if the private key is not None
 # firebase_private_key = firebase_private_key.replace("\\n", "\n")
 
 # # Create a dictionary with Firebase credentials
@@ -38,7 +36,6 @@ app = FastAPI()
 #     "universe_domain": os.getenv("FIREBASE_UNIVERSE_DOMAIN"),
 # }
 
-# # Use the credentials to initialize Firebase
 # cred = credentials.Certificate(firebase_credentials)
 # initialize_app(cred)
 
@@ -52,13 +49,10 @@ model_path = os.path.join('models', 'dyslexia_scanner.h5')
 loaded_model = tf.keras.models.load_model(model_path)
 
 def preprocess_image(img):
-    # Ensure that the image has 3 channels (RGB) and resize it
     resized_img = img.convert('RGB').resize((256, 256))
 
-    # Convert the image to a NumPy array and normalize the values
     processed_image = np.array(resized_img) / 255.0
 
-    # Add an extra dimension to the array to match the model's expected input shape
     return np.expand_dims(processed_image, axis=0)
 
 
@@ -99,7 +93,6 @@ def generate_sequential_id():
 def get_dyslexia_data(doc_id=None):
     dyslexia_data = []
 
-    # Retrieve all data or data for a specific document ID
     collection_ref = db.collection('dyslexia_data')
 
     if doc_id:
@@ -108,7 +101,7 @@ def get_dyslexia_data(doc_id=None):
 
         if doc.exists:
             doc_data = doc.to_dict()
-            doc_data['id'] = doc.id  # Include document ID in the data
+            doc_data['id'] = doc.id  
             dyslexia_data.append(doc_data)
         else:
             return None  # Document not found
@@ -117,7 +110,7 @@ def get_dyslexia_data(doc_id=None):
 
         for doc in docs:
             doc_data = doc.to_dict()
-            doc_data['id'] = doc.id  # Include document ID in the data
+            doc_data['id'] = doc.id  
             dyslexia_data.append(doc_data)
 
     return dyslexia_data
@@ -155,11 +148,9 @@ def get_predict_route():
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
-# Add a route to delete all dyslexia data
 @app.delete("/delete-all")
 def delete_all_data():
     try:
-        # Delete all documents in the 'dyslexia_data' collection
         collection_ref = db.collection('dyslexia_data')
         docs = collection_ref.stream()
 
@@ -170,7 +161,6 @@ def delete_all_data():
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-# Add a route to delete dyslexia data by ID
 @app.delete("/delete/{doc_id}")
 def delete_data_by_id(doc_id: str):
     try:
@@ -186,7 +176,6 @@ def delete_data_by_id(doc_id: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
-# Add a route to update dyslexia data by ID using an image
 @app.put("/update/{doc_id}")
 async def update_data_by_id(doc_id: str, image: UploadFile = File(...)):
     try:
@@ -200,7 +189,6 @@ async def update_data_by_id(doc_id: str, image: UploadFile = File(...)):
         prediction = loaded_model.predict(processed_image)
         prediction_value = prediction[0][0]
 
-        # Update the document with the specified ID in the 'dyslexia_data' collection
         doc_ref = db.collection('dyslexia_data').document(doc_id)
         doc = doc_ref.get()
 
